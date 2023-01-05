@@ -44,7 +44,7 @@ router.get("/myitems",auth, async (req, res) => {
       .limit(perPage)
       .skip((page - 1) * perPage)
       // .sort({_id:-1}) like -> order by _id DESC
-      .sort({ [sort]: reverse });
+      .sort({ [sort]: reverse }).populate('categories');
       console.log(data,count);
     res.json({"data":data,"count":count});
   } catch (err) {
