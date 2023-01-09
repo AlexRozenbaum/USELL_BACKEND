@@ -77,7 +77,7 @@ router.get("/myitems",auth, async (req, res) => {
     res.status(500).json({ msg: "err", err });
   }
 });
-router.get("/mywishlist",auth, async (req, res) => {
+router.get("/wishlist",auth, async (req, res) => {
   let perPage = req.query.perPage || 10;
   let page = req.query.page || 1;
   let sort = req.query.sort || "_id";
