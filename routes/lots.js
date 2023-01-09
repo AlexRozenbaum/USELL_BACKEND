@@ -16,18 +16,26 @@ router.get("/", async (req, res) => {
 }
 
   try {
-    let data = await LotModel.find(
+    let count = await LotModel.countDocuments({
+      $and: [
+          { $or: [ filter_category ] },
+          { $or: [ {name: searchReg  }, { info: searchReg } ] }
+      ]
+  } )
+    let items = await LotModel.find(
       {
         $and: [
             { $or: [ filter_category ] },
             { $or: [ {name: searchReg  }, { info: searchReg } ] }
         ]
-    }  ).populate('categories')
+    }  )
+   
       .limit(perPage)
       .skip((page - 1) * perPage)
       // .sort({_id:-1}) like -> order by _id DESC
       .sort({ [sort]: reverse })
-    res.json(data);
+       .populate('categories')
+    res.json({"items":items,"count":count});
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: "there erorr try again later", err });
@@ -37,16 +45,29 @@ router.get("/myitems",auth, async (req, res) => {
   let perPage = req.query.perPage || 9;
   let page = req.query.page || 1;
   let sort = req.query.sort || "_id";
+  let category = req.query.category ;
   let reverse = req.query.reverse == "yes" ? 1 : -1;
+  let queryS = req.query.s;
+  let searchReg = new RegExp(queryS, "i")
+  let filter_category = {category_url :category};
+  if(category=="ALL") {
+    filter_category={}}
   try {
     let count=await LotModel.countDocuments({ user_id: req.tokenData._id });
-    let data = await LotModel.find({ user_id: req.tokenData._id })
+    let items = await LotModel.find({ user_id: req.tokenData._id },
+      {
+        $and: [
+            { $or: [ filter_category ] },
+            { $or: [ {name: searchReg  }, { info: searchReg } ] }
+        ]
+    })
       .limit(perPage)
       .skip((page - 1) * perPage)
       // .sort({_id:-1}) like -> order by _id DESC
-      .sort({ [sort]: reverse }).populate('categories');
+      .sort({ [sort]: reverse })
+      .populate('categories');
       console.log(data,count);
-    res.json({"data":data,"count":count});
+    res.json({"items":items,"count":count});
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: "err", err });
