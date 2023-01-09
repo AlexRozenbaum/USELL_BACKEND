@@ -29,7 +29,6 @@ router.get("/", async (req, res) => {
             { $or: [ {name: searchReg  }, { info: searchReg } ] }
         ]
     }  )
-   
       .limit(perPage)
       .skip((page - 1) * perPage)
       // .sort({_id:-1}) like -> order by _id DESC
@@ -53,26 +52,65 @@ router.get("/myitems",auth, async (req, res) => {
   if(category=="ALL") {
     filter_category={}}
   try {
-    let count=await LotModel.countDocuments({ user_id: req.tokenData._id },
-      {
-        $and: [
+    let count=await LotModel.countDocuments({
+
+        $and: [ { user_id: req.tokenData._id},
             { $or: [ filter_category ] },
             { $or: [ {name: searchReg  }, { info: searchReg } ] }
         ]
     });
-    let items = await LotModel.find({ user_id: req.tokenData._id },
-      {
-        $and: [
-            { $or: [ filter_category ] },
-            { $or: [ {name: searchReg  }, { info: searchReg } ] }
-        ]
-    })
+    let items = await LotModel.find({
+      
+      $and: [ { user_id: req.tokenData._id},
+        { $or: [ filter_category ] },
+        { $or: [ {name: searchReg  }, { info: searchReg } ] }
+    ]
+})
       .limit(perPage)
       .skip((page - 1) * perPage)
       // .sort({_id:-1}) like -> order by _id DESC
       .sort({ [sort]: reverse })
       .populate('categories');
-      console.log(data,count);
+    res.json({"items":items,"count":count});
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "err", err });
+  }
+});
+router.get("/mywishlist",auth, async (req, res) => {
+  let perPage = req.query.perPage || 10;
+  let page = req.query.page || 1;
+  let sort = req.query.sort || "_id";
+  let category = req.query.category ;
+  let reverse = req.query.reverse == "yes" ? 1 : -1;
+  let queryS = req.query.s;
+  let searchReg = new RegExp(queryS, "i")
+  let filter_category = {category_url :category};
+  if(category=="ALL") {
+    filter_category={}}
+  try {
+    let wishlist=await UserModel.find(
+         {user_id: req.tokenData._id},{wishlist}   
+    );
+    let count=await LotModel.countDocuments({
+
+        $and: [ { '_id': { $in: wishlist}},
+            { $or: [ filter_category ] },
+            { $or: [ {name: searchReg  }, { info: searchReg } ] }
+        ]
+    });
+    let items = await LotModel.find({
+      
+      $and: [ { '_id': { $in: wishlist}},
+        { $or: [ filter_category ] },
+        { $or: [ {name: searchReg  }, { info: searchReg } ] }
+    ]
+})
+      .limit(perPage)
+      .skip((page - 1) * perPage)
+      // .sort({_id:-1}) like -> order by _id DESC
+      .sort({ [sort]: reverse })
+      .populate('categories');
     res.json({"items":items,"count":count});
   } catch (err) {
     console.log(err);
