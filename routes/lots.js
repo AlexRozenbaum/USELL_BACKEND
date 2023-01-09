@@ -53,7 +53,13 @@ router.get("/myitems",auth, async (req, res) => {
   if(category=="ALL") {
     filter_category={}}
   try {
-    let count=await LotModel.countDocuments({ user_id: req.tokenData._id });
+    let count=await LotModel.countDocuments({ user_id: req.tokenData._id },
+      {
+        $and: [
+            { $or: [ filter_category ] },
+            { $or: [ {name: searchReg  }, { info: searchReg } ] }
+        ]
+    });
     let items = await LotModel.find({ user_id: req.tokenData._id },
       {
         $and: [
