@@ -89,9 +89,11 @@ router.get("/mywishlist",auth, async (req, res) => {
   if(category=="ALL") {
     filter_category={}}
   try {
+    
     let wishlist=await UserModel.find(
          {user_id: req.tokenData._id},{wishlist}   
     );
+    console.log(wishlist)
     let count=await LotModel.countDocuments({
 
         $and: [ { '_id': { $in: wishlist}},
