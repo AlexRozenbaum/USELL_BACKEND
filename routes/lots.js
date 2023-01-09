@@ -91,7 +91,7 @@ router.get("/mywishlist",auth, async (req, res) => {
   try {
     
     let wishlist=await UserModel.find(
-         {user_id: req.tokenData._id},{wishlist}   
+         {user_id:req.tokenData._id},{wishlist}   
     );
     console.log(wishlist)
     let count=await LotModel.countDocuments({
