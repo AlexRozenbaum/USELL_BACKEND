@@ -3,7 +3,7 @@ const { auth } = require("../middlewares/auth");
 const router = express.Router();
 const { validateLot, LotModel, validateLotBid } = require("../models/lotModel");
 router.get("/", async (req, res) => {
-  let perPage = req.query.perPage || 9;
+  let perPage = req.query.perPage || 10;
   let page = req.query.page || 1;
   let sort = req.query.sort || "_id";
   let category = req.query.category ;
@@ -42,7 +42,7 @@ router.get("/", async (req, res) => {
   }
 });
 router.get("/myitems",auth, async (req, res) => {
-  let perPage = req.query.perPage || 9;
+  let perPage = req.query.perPage || 10;
   let page = req.query.page || 1;
   let sort = req.query.sort || "_id";
   let category = req.query.category ;
