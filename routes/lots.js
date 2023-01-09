@@ -82,32 +82,6 @@ router.get("/byId/:id",async (req, res) => {
     res.status(500).json({ msg: "there error try again later", err });
   }
 });
-
-router.get("/count", async (req, res) => {
-  let perPage = req.query.perPage || 10;
-  let page = req.query.page || 1;
-  let sort = req.query.sort || "_id";
-  let category = req.query.category ;
-  let reverse = req.query.reverse == "yes" ? 1 : -1;
-  let queryS = req.query.s;
-  let searchReg = new RegExp(queryS, "i")
-  let filter_category = {category_url :category};
-  if(category=="ALL") {
-    filter_category={}
-}
-  try {
-    let count = await LotModel.countDocuments({
-      $and: [
-          { $or: [ filter_category ] },
-          { $or: [ {name: searchReg  }, { info: searchReg } ] }
-      ]
-  } );
-    res.json({ count });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ msg: "there error try again later", err });
-  }
-});
 router.post("/",auth, async (req, res) => {
     let validBody = validateLot(req.body);
     console.log(req.body);
