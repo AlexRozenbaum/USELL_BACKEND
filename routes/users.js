@@ -30,7 +30,8 @@ router.get("/myInfo", auth, async(req, res) => {
 router.patch("/myinfo/edit", auth, async(req, res) => {
     try {
         console.log(req.body)
-        let data = await UserModel.findOneAndUpdate({ _id: req.tokenData._id }, { $set: req.body });
+        let data = await UserModel.updateOne({ _id: req.tokenData._id }, { $set: req.body });
+        console.log(data);
         res.json(data);
     } catch (err) {
         console.log(err)

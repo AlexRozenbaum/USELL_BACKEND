@@ -35,7 +35,8 @@ let userSchema = new mongoose.Schema({
     changepasswordLink:{type: String},
     wishlist:{
         type: [String],
-        unique: true
+        unique: true,
+        _id: false,
       },
     lotlist:{
         type: [{item_id:String,bid:Number}],

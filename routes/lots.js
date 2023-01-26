@@ -2,6 +2,7 @@ const express= require("express");
 const { auth } = require("../middlewares/auth");
 const router = express.Router();
 const { validateLot, LotModel, validateLotBid } = require("../models/lotModel");
+const { UserModel } = require("../models/userModel");
 router.get("/", async (req, res) => {
   let perPage = req.query.perPage || 10;
   let page = req.query.page || 1;
@@ -91,9 +92,10 @@ router.get("/wishlist",auth, async (req, res) => {
   try {
     
     let wishlist=await UserModel.find(
-         {user_id:req.tokenData._id},{wishlist}   
-    );
-    console.log(wishlist)
+         {_id:req.tokenData._id}
+     
+    ).distinct("wishlist");
+    console.log(wishlist) ;
     let count=await LotModel.countDocuments({
 
         $and: [ { '_id': { $in: wishlist}},
@@ -104,6 +106,49 @@ router.get("/wishlist",auth, async (req, res) => {
     let items = await LotModel.find({
       
       $and: [ { '_id': { $in: wishlist}},
+        { $or: [ filter_category ] },
+        { $or: [ {name: searchReg  }, { info: searchReg } ] }
+    ]
+})
+      .limit(perPage)
+      .skip((page - 1) * perPage)
+      // .sort({_id:-1}) like -> order by _id DESC
+      .sort({ [sort]: reverse })
+      .populate('categories');
+    res.json({"items":items,"count":count});
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "err", err });
+  }
+});
+router.get("/lotlist",auth, async (req, res) => {
+  let perPage = req.query.perPage || 10;
+  let page = req.query.page || 1;
+  let sort = req.query.sort || "_id";
+  let category = req.query.category ;
+  let reverse = req.query.reverse == "yes" ? 1 : -1;
+  let queryS = req.query.s;
+  let searchReg = new RegExp(queryS, "i")
+  let filter_category = {category_url :category};
+  if(category=="ALL") {
+    filter_category={}}
+  try {
+    
+    let lotlist=await UserModel.find(
+         {_id:req.tokenData._id}
+     
+    ).distinct("lotlist");
+    console.log(lotlist) ;
+    let count=await LotModel.countDocuments({
+
+        $and: [ { '_id': { $in: lotlist}},
+            { $or: [ filter_category ] },
+            { $or: [ {name: searchReg  }, { info: searchReg } ] }
+        ]
+    });
+    let items = await LotModel.find({
+      
+      $and: [ { '_id': { $in: lotlist}},
         { $or: [ filter_category ] },
         { $or: [ {name: searchReg  }, { info: searchReg } ] }
     ]
